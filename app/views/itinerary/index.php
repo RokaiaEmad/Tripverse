@@ -1,4 +1,13 @@
 <?php
+
+/** @var array $trip */
+/** @var array $members */
+/** @var array $activitiesByDay */
+/** @var array $version */
+/** @var array $versions */
+/** @var int $itinerary_id */
+/** @var bool $isLeader */
+/** @var array $tripDays */
 require_once __DIR__ . '/../../models/RSVP.php';
 $activity_error   = $_SESSION['activity_error']   ?? '';
 $activity_success = $_SESSION['activity_success'] ?? '';
@@ -604,7 +613,7 @@ endforeach;
 
   </div>
 
-</div><!-- /container --><
+</div><!-- /container -->
 
 <script>
 function selectDay(tab, panelId) {

@@ -109,10 +109,10 @@ class ItineraryController
                 'day_number' => $dayNumber,
 
                 'date' =>
-                    date(
-                        'Y-m-d',
-                        $current
-                    )
+                date(
+                    'Y-m-d',
+                    $current
+                )
             ];
 
             $current =
@@ -125,28 +125,26 @@ class ItineraryController
         }
 
         // send data to view
-        extract([
+        $data = [
 
             'trip' => $trip,
 
             'members' => $members,
 
-            'activitiesByDay' =>
-                $activitiesByDay,
+            'activitiesByDay' => $activitiesByDay,
 
             'version' => $version,
 
             'versions' => $versions,
 
-            'itinerary_id' =>
-                $itinerary_id,
+            'itinerary_id' => $itinerary_id,
 
-            'isLeader' =>
-                $isLeader,
+            'isLeader' => $isLeader,
 
-            'tripDays' =>
-                $tripDays
-        ]);
+            'tripDays' => $tripDays
+        ];
+
+        extract($data);
 
         require_once
             __DIR__ .
