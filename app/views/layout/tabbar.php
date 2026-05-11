@@ -120,10 +120,13 @@ if (!isset($trip)) {
         </a>
 
         <a
-            href="/Tripverse/app/controllers/ExpenseController.php?action=show&trip_id=<?= $trip['id'] ?>"
+            href="/Tripverse/app/controllers/ExpenseController.php?action=index&itinerary_id=<?= $itinerary_id ?>"
             class="<?= $activeTab == 'expenses' ? 'active' : '' ?>">
+
             <i class="fa-solid fa-wallet"></i>
+
             <span>Expenses</span>
+
         </a>
 
         <a

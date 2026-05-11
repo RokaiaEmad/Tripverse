@@ -283,6 +283,10 @@ unset($_SESSION['activity_success']);
 
       <?php include __DIR__ . '/../poll/content.php'; ?>
 
+    <?php elseif ($activeTab === 'expenses'): ?>
+
+      <?php include __DIR__ . '/../expense/addExpense.php'; ?>
+
     <?php endif; ?>
 
   </div>
