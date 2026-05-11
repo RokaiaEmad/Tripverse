@@ -10,11 +10,15 @@ if (!isset($activeTab)) { $activeTab = 'home'; }
         --border-color: #e5e7eb;
         --text-main: #4b5563;
         --accent-color: #2563eb;
-        --hover-effect: #f9fafb;
+        --hover-effect: #f9fafb ;
+        --text-main: rgba(232,240,255,.45);   
+       --accent-color: #00e5a0;             
+       --hover-effect: rgba(0,229,160,.05);  
+       --border-color: rgba(0,229,160,.15);  
     }
 
-    
-    <?php if ($activeTab === 'itinerary'): ?>
+
+    /* <?php if ($activeTab === 'itinerary'): ?>
     :root {
         --bg-page: #0f1115;
         --bg-tabs: #181a20;
@@ -23,15 +27,15 @@ if (!isset($activeTab)) { $activeTab = 'home'; }
         --accent-color: #3b82f6;
         --hover-effect: rgba(255,255,255,0.03);
     }
-    <?php endif; ?>
+    <?php endif; ?> */
 
 
-    body {
+    /* body {
         background: var(--bg-page) !important;
-    }
+    } */
 
     .trip-tabs {
-        background: var(--bg-tabs);
+        background:#060d1f;
         border: 1px solid var(--border-color);
         border-radius: 16px;
         overflow: hidden;
@@ -78,6 +82,17 @@ if (!isset($activeTab)) { $activeTab = 'home'; }
         background: var(--accent-color);
         border-radius: 10px;
     }
+    .switch-bar a.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 15%;
+    width: 70%;
+    height: 3px;
+    background: #00e5a0;   /* نفس accent */
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,229,160,.4);  /* glow خفيف */
+}
 </style>
 
 <div class="trip-tabs">
