@@ -114,15 +114,14 @@ if (!isset($trip)) {
 
         <a
             href="/Tripverse/app/controllers/ItineraryController.php?action=show&itinerary_id=<?php echo $itinerary_id; ?>"
-            class="<?= $activeTab == 'itinerary' ? 'active' : '' ?>"
-        >
+            class="<?= $activeTab == 'itinerary' ? 'active' : '' ?>">
             <i class="fa-regular fa-map"></i>
             <span>Itinerary</span>
         </a>
 
-       <a href="../controllers/ExpenseController.php?action=show&trip_id=<?= $trip['id'] ?>">
-    Expense
-</a>
+        <a
+            href="/Tripverse/app/controllers/ExpenseController.php?action=show&trip_id=<?= $trip['id'] ?>"
+            class="<?= $activeTab == 'expenses' ? 'active' : '' ?>">
             <i class="fa-solid fa-wallet"></i>
             <span>Expenses</span>
         </a>
