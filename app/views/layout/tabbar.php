@@ -127,10 +127,13 @@ if (!isset($trip)) {
             <span>Expenses</span>
         </a>
 
-        <a href="documents.php" class="<?= $activeTab == 'documents' ? 'active' : '' ?>">
-            <i class="fa-regular fa-file-lines"></i>
-            <span>Documents</span>
-        </a>
+        <a
+    href="/Tripverse/app/controllers/DocumentController.php?action=index&trip_id=<?= $trip['id'] ?>"
+    class="<?= $activeTab == 'documents' ? 'active' : '' ?>"
+>
+    <i class="fa-regular fa-file-lines"></i>
+    <span>Documents</span>
+</a>
 
         <a href="voteController.php" class="<?= $activeTab == 'votes' ? 'active' : '' ?>">
             <i class="fa-solid fa-chart-simple"></i>
