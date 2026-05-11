@@ -177,8 +177,9 @@ setInterval(pollItinerary, 5000);
 
   </div>
 
+  <?php 
   $activeTab = 'itinerary';
-  <?php require __DIR__ . '/../layout/tabbar.php'; ?>
+  require __DIR__ . '/../layout/tabbar.php'; ?>
 
 
 
