@@ -1,3 +1,5 @@
+<?php require __DIR__ . '/../layout/header.php';
+?>
 <?php
 
 /** @var array $trip */
@@ -175,6 +177,10 @@ setInterval(pollItinerary, 5000);
 
   </div>
 
+  $activeTab = 'itinerary';
+  <?php require __DIR__ . '/../layout/tabbar.php'; ?>
+
+
 
 
   <div id="activitiesContainer">
@@ -204,3 +210,4 @@ function selectDay(tab, panelId) {
 
 </body>
 </html>
+<?php require __DIR__ . '/../layout/footer.php'; ?>
