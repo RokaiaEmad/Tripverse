@@ -4,51 +4,115 @@ session_start();
 
 require_once __DIR__ . '/../models/Document.php';
 
-$action = $_GET['action'] ?? '';
+class DocumentController
+{
+    private $documentModel;
 
-if ($action === 'upload') {
+    public function __construct()
+    {
+        $this->documentModel =
+            new Document();
+    }
 
-    $file = $_FILES['document'];
+    /*
+    |--------------------------------------------------------------------------
+    | OPEN DOCUMENTS TAB
+    |--------------------------------------------------------------------------
+    */
 
-    $fileName =
-        time() . '_' . basename($file['name']);
+    public function index()
+    {
+        $itinerary_id =
+            $_GET['itinerary_id'];
 
-    $target =
-        __DIR__ .
-        '/../../app/uploads/documents/' .
-        $fileName;
+        $_SESSION['active_tab'] =
+            'documents';
 
-    if (
-        move_uploaded_file(
-            $file['tmp_name'],
-            $target
-        )
-    ) {
+        header(
+            'Location: /Tripverse/app/controllers/ItineraryController.php?action=show&itinerary_id=' .
+            $itinerary_id
+        );
 
-        $documentModel = new Document();
+        exit;
+    }
 
-        $documentModel->create([
+    /*
+    |--------------------------------------------------------------------------
+    | UPLOAD DOCUMENT
+    |--------------------------------------------------------------------------
+    */
 
-            'trip_id' =>
-                $_POST['trip_id'],
+    public function upload()
+    {
+        $file =
+            $_FILES['document'];
 
-            'owner_member_id' =>
-                $_SESSION['user_id'],
+        $fileName =
+            time() . '_' . basename($file['name']);
 
-            'file_path' =>
-                $fileName,
+        $target =
+            __DIR__ .
+            '/../uploads/documents/' .
+            $fileName;
 
-            'type' =>
-                $_POST['type'],
+        if (
+            move_uploaded_file(
+                $file['tmp_name'],
+                $target
+            )
+        ) {
 
-            'visibility' =>
-                $_POST['visibility']
-        ]);
+            $this->documentModel->create([
 
-        echo "Uploaded successfully";
+                'trip_id' =>
+                    $_POST['trip_id'],
 
-    } else {
+                'owner_member_id' =>
+                    $_SESSION['user_id'],
+
+                'file_path' =>
+                    $fileName,
+
+                'type' =>
+                    $_POST['type'],
+
+                'visibility' =>
+                    $_POST['visibility']
+            ]);
+
+            $_SESSION['active_tab'] =
+                'documents';
+
+            header(
+                'Location: /Tripverse/app/controllers/ItineraryController.php?action=show&itinerary_id=' .
+                $_POST['trip_id']
+            );
+
+            exit;
+        }
 
         echo "Upload failed";
     }
+}
+
+/*
+|--------------------------------------------------------------------------
+| ROUTER
+|--------------------------------------------------------------------------
+*/
+
+$controller =
+    new DocumentController();
+
+$action =
+    $_GET['action'] ?? '';
+
+if ($action === 'index') {
+
+    $controller->index();
+}
+
+if ($action === 'upload') {
+
+    $controller->upload();
 }

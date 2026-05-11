@@ -1,25 +1,60 @@
-public function create($data)
+<?php
+
+require_once __DIR__ . '/../../core/Database.php';
+
+class Document
 {
-    $db = Database::getInstance();
+    private $db;
 
-    $stmt = $db->prepare("
-        INSERT INTO documents
-        (
-            trip_id,
-            owner_member_id,
-            file_path,
-            type,
-            visibility
-        )
-        VALUES (?, ?, ?, ?, ?)
-    ");
+    public function __construct()
+    {
+        $this->db =
+            Database::getInstance();
+    }
 
-    return $stmt->execute([
+    /*
+    |--------------------------------------------------------------------------
+    | CREATE DOCUMENT
+    |--------------------------------------------------------------------------
+    */
 
-        $data['trip_id'],
-        $data['owner_member_id'],
-        $data['file_path'],
-        $data['type'],
-        $data['visibility']
-    ]);
+    public function create($data)
+    {
+        $trip_id =
+            intval($data['trip_id']);
+
+        $owner_member_id =
+            intval($data['owner_member_id']);
+
+        $file_path =
+            trim($data['file_path']);
+
+        $type =
+            trim($data['type']);
+
+        $visibility =
+            trim($data['visibility']);
+
+        return $this->db->insert("
+
+            INSERT INTO documents
+            (
+                trip_id,
+                owner_member_id,
+                file_path,
+                type,
+                visibility
+            )
+
+            VALUES
+            (
+                $trip_id,
+                $owner_member_id,
+                '$file_path',
+                '$type',
+                '$visibility'
+            )
+
+        ");
+    }
 }

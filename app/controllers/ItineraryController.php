@@ -125,30 +125,38 @@ class ItineraryController
         }
 
         // send data to view
-        $data = [
+       // send data to view
+// send data to view
+$data = [
 
-            'trip' => $trip,
+    'trip' => $trip,
 
-            'members' => $members,
+    'members' => $members,
 
-            'activitiesByDay' => $activitiesByDay,
+    'activitiesByDay' => $activitiesByDay,
 
-            'version' => $version,
+    'version' => $version,
 
-            'versions' => $versions,
+    'versions' => $versions,
 
-            'itinerary_id' => $itinerary_id,
+    'itinerary_id' => $itinerary_id,
 
-            'isLeader' => $isLeader,
+    'isLeader' => $isLeader,
 
-            'tripDays' => $tripDays
-        ];
+    'tripDays' => $tripDays
+];
 
-        extract($data);
+$activeTab =
+    $_SESSION['active_tab']
+    ?? 'itinerary';
 
-        require_once
-            __DIR__ .
-            '/../views/itinerary/index.php';
+unset($_SESSION['active_tab']);
+
+extract($data);
+
+require_once
+    __DIR__ .
+    '/../views/itinerary/index.php';
     }
 }
 

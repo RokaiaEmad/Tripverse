@@ -126,8 +126,8 @@ if (!isset($trip)) {
             <span>Expenses</span>
         </a>
 
-        <a
-    href="/Tripverse/app/controllers/DocumentController.php?action=index&trip_id=<?= $trip['id'] ?>"
+       <a
+    href="/Tripverse/app/controllers/DocumentController.php?action=index&itinerary_id=<?= $itinerary_id ?>"
     class="<?= $activeTab == 'documents' ? 'active' : '' ?>"
 >
     <i class="fa-regular fa-file-lines"></i>
