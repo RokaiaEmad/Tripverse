@@ -13,35 +13,40 @@ class Activity
         $this->db = Database::getInstance();
     }
 
-    public function create($data)
-    {
-        $version_id = intval($data['version_id']);
+    // CHECK IF TIME CONFLICT EXISTS
+    public function hasConflict(
+        $version_id,
+        $start_time,
+        $end_time
+    ) {
 
-        $title = trim($data['title']);
-        $location = trim($data['location']);
+        $version_id = intval($version_id);
 
-        $start_time = $data['start_time'];
-        $end_time = $data['end_time'];
+        return $this->db->select("
 
-        $transport_mode =
-            $data['transport_mode'];
-
-        $created_by = intval($data['created_by']);
-
-        // invalid time
-        if(strtotime($start_time) >= strtotime($end_time)){
-            return 'invalid_time';
-        }
-
-        // conflict detection
-        $conflict = $this->db->select("
-            SELECT *
+            SELECT activities.*
 
             FROM activities
 
-            WHERE version_id = $version_id
+            JOIN itinerary_versions
+            ON itinerary_versions.version_id =
+            activities.version_id
+
+            WHERE itinerary_versions.itinerary_id = (
+
+                SELECT itinerary_id
+
+                FROM itinerary_versions
+
+                WHERE version_id = $version_id
+
+                LIMIT 1
+            )
+
+            AND itinerary_versions.is_active = 1
 
             AND (
+
                 ('$start_time' BETWEEN start_time AND end_time)
 
                 OR
@@ -51,38 +56,68 @@ class Activity
                 OR
 
                 (
-                    start_time BETWEEN '$start_time' AND '$end_time'
+                    start_time BETWEEN '$start_time'
+                    AND '$end_time'
                 )
             )
 
             LIMIT 1
         ");
+    }
 
-        if($conflict){
-            return 'time_conflict';
+    public function create($data)
+    {
+        $version_id = intval($data['version_id']);
+
+        $title = trim($data['title']);
+
+        $location = trim($data['location']);
+
+        $start_time = $data['start_time'];
+
+        $end_time = $data['end_time'];
+
+        $transport_mode =
+            $data['transport_mode'];
+
+        $created_by =
+            intval($data['created_by']);
+
+        // invalid time
+        if (
+            strtotime($start_time) >=
+            strtotime($end_time)
+        ) {
+
+            return 'invalid_time';
         }
 
         // default status
         $status = 'draft';
 
         // leader check
-        $versionModel = new ItineraryVersion();
+        $versionModel =
+            new ItineraryVersion();
 
         $trip_id =
-            $versionModel->getTripIdByVersion($version_id);
+            $versionModel
+            ->getTripIdByVersion($version_id);
 
-        $tripMember = new TripMember();
+        $tripMember =
+            new TripMember();
 
-        $isLeader = $tripMember->isLeader(
-            $trip_id,
-            $created_by
-        );
+        $isLeader =
+            $tripMember->isLeader(
+                $trip_id,
+                $created_by
+            );
 
-        if($isLeader){
+        if ($isLeader) {
+
             $status = 'confirmed';
         }
 
-        // create main activity
+        // create ONLY real activity
         $activity_id = $this->db->insert("
             INSERT INTO activities
             (
@@ -107,92 +142,6 @@ class Activity
                 '$transport_mode'
             )
         ");
-
-        // previous activity same day
-        $previous = $this->db->select("
-            SELECT *
-
-            FROM activities
-
-            WHERE version_id = $version_id
-
-            AND DATE(start_time) =
-            DATE('$start_time')
-
-            AND end_time <= '$start_time'
-
-            AND activity_id != $activity_id
-
-            ORDER BY end_time DESC
-
-            LIMIT 1
-        ");
-
-        // transportation buffer logic
-        if($previous){
-
-            $previous = $previous[0];
-
-            // different locations only
-            if(
-                strtolower($previous['location']) !=
-                strtolower($location)
-            ){
-
-                // estimated travel time
-                $minutes = 30;
-
-                if($transport_mode == 'walking'){
-                    $minutes = 20;
-                }
-
-                if($transport_mode == 'train'){
-                    $minutes = 45;
-                }
-
-                if($transport_mode == 'car'){
-                    $minutes = 30;
-                }
-
-                $travel_start =
-                    $previous['end_time'];
-
-                $travel_end =
-                    date(
-                        'Y-m-d H:i:s',
-                        strtotime(
-                            "+$minutes minutes",
-                            strtotime($travel_start)
-                        )
-                    );
-
-                // add travel block
-                $this->db->insert("
-                    INSERT INTO activities
-                    (
-                        version_id,
-                        title,
-                        location,
-                        start_time,
-                        end_time,
-                        status,
-                        created_by,
-                        transport_mode
-                    )
-                    VALUES
-                    (
-                        $version_id,
-                        'Travel Time',
-                        'From {$previous['location']} to $location',
-                        '$travel_start',
-                        '$travel_end',
-                        'confirmed',
-                        $created_by,
-                        '$transport_mode'
-                    )
-                ");
-            }
-        }
 
         return $activity_id;
     }
@@ -234,10 +183,13 @@ class Activity
             $day =
                 date(
                     'Y-m-d',
-                    strtotime($activity['start_time'])
+                    strtotime(
+                        $activity['start_time']
+                    )
                 );
 
-            $grouped[$day][] = $activity;
+            $grouped[$day][] =
+                $activity;
         }
 
         return $grouped;
@@ -245,7 +197,8 @@ class Activity
 
     public function getActivityWithTrip($activity_id)
     {
-        $activity_id = intval($activity_id);
+        $activity_id =
+            intval($activity_id);
 
         $result = $this->db->select("
             SELECT

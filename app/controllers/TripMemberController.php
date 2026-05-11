@@ -73,52 +73,62 @@ class TripMemberController
 }
 
     public function accept()
-    {
-        if(!isset($_GET['token'])){
-            die('Invitation token missing');
-        }
+{
+    if(!isset($_GET['token'])){
+        die('Invitation token missing');
+    }
 
-        $token = $_GET['token'];
+    $token = $_GET['token'];
 
-        $invite =
-            $this->inviteModel
-            ->getByToken($token);
-
-        if(!$invite){
-            die('Invalid invitation');
-        }
-
-        if(!isset($_SESSION['user_id'])){
-            die('You must login first');
-        }
-
-        $user_id = $_SESSION['user_id'];
-
-        $trip_id = intval($invite['trip_id']);
-
-        $exists =
-            $this->memberModel
-            ->isMember($trip_id, $user_id);
-
-        if(!$exists){
-            $this->memberModel
-                ->addMember($trip_id, $user_id);
-        }
-
+    $invite =
         $this->inviteModel
-            ->accept($invite['id']);
+        ->getByToken($token);
 
-        $itinerary_id =
-            $this->tripModel
-            ->getItineraryId($trip_id);
+    if(!$invite){
+        die('Invalid invitation');
+    }
+
+    // NOT LOGGED IN
+    if(!isset($_SESSION['user_id'])){
+
+        $_SESSION['pending_invite_token'] =
+            $token;
 
         header(
-            'Location: /Tripverse/app/controllers/ItineraryController.php?action=show&itinerary_id=' .
-            $itinerary_id
+            'Location: /Tripverse/app/views/auth/login.php'
         );
 
         exit;
     }
+
+    $user_id = $_SESSION['user_id'];
+
+    $trip_id = intval($invite['trip_id']);
+
+    $exists =
+        $this->memberModel
+        ->isMember($trip_id, $user_id);
+
+    if(!$exists){
+
+        $this->memberModel
+            ->addMember($trip_id, $user_id);
+    }
+
+    $this->inviteModel
+        ->accept($invite['id']);
+
+    $itinerary_id =
+        $this->tripModel
+        ->getItineraryId($trip_id);
+
+    header(
+        'Location: /Tripverse/app/controllers/ItineraryController.php?action=show&itinerary_id=' .
+        $itinerary_id
+    );
+
+    exit;
+}
 }
 
 $controller = new TripMemberController();

@@ -494,37 +494,36 @@ $selected_date = $_GET['date'] ?? date('Y-m-d');
     <div class="divider"></div>
 
     <!-- Time pickers -->
-    <div class="time-row">
-      <div class="field" style="margin-bottom:0">
-        <label class="field-label">Start Hour</label>
-        <div class="hour-picker-wrap">
-          <select id="start_hour" class="field-input" required>
-            <?php for ($h = 0; $h < 24; $h++): 
-              $val  = str_pad($h, 2, '0', STR_PAD_LEFT);
-              $disp = ($h === 0 ? '12 AM' : ($h < 12 ? "$h AM" : ($h === 12 ? '12 PM' : ($h-12).' PM')));
-              $sel  = ($h === 9) ? 'selected' : '';
-            ?>
-              <option value="<?= $val ?>" <?= $sel ?>><?= $disp ?></option>
-            <?php endfor; ?>
-          </select>
-        </div>
-      </div>
+    <!-- Time pickers -->
+<div class="time-row">
 
-      <div class="field" style="margin-bottom:0">
-        <label class="field-label">End Hour</label>
-        <div class="hour-picker-wrap">
-          <select id="end_hour" class="field-input" required>
-            <?php for ($h = 0; $h < 24; $h++):
-              $val  = str_pad($h, 2, '0', STR_PAD_LEFT);
-              $disp = ($h === 0 ? '12 AM' : ($h < 12 ? "$h AM" : ($h === 12 ? '12 PM' : ($h-12).' PM')));
-              $sel  = ($h === 10) ? 'selected' : '';
-            ?>
-              <option value="<?= $val ?>" <?= $sel ?>><?= $disp ?></option>
-            <?php endfor; ?>
-          </select>
-        </div>
-      </div>
-    </div>
+  <div class="field" style="margin-bottom:0">
+    <label class="field-label">Start Time</label>
+
+    <input
+      type="time"
+      id="start_time_picker"
+      class="field-input"
+      value="09:00"
+      step="900"
+      required
+    >
+  </div>
+
+  <div class="field" style="margin-bottom:0">
+    <label class="field-label">End Time</label>
+
+    <input
+      type="time"
+      id="end_time_picker"
+      class="field-input"
+      value="10:00"
+      step="900"
+      required
+    >
+  </div>
+
+</div>
 
     <div class="divider"></div>
 
@@ -534,42 +533,85 @@ $selected_date = $_GET['date'] ?? date('Y-m-d');
 </div>
 
 <script>
-  const date = "<?= htmlspecialchars($selected_date) ?>";
+ const date = "<?= htmlspecialchars($selected_date) ?>";
 
-  function buildDatetime(hour) {
-    return `${date}T${hour}:00`;
-  }
+function syncHiddenFields() {
 
-  function syncHiddenFields() {
-    const sh = document.getElementById('start_hour').value;
-    const eh = document.getElementById('end_hour').value;
-    document.getElementById('start_time_hidden').value = buildDatetime(sh);
-    document.getElementById('end_time_hidden').value   = buildDatetime(eh);
-  }
+    const start =
+        document.getElementById(
+            'start_time_picker'
+        ).value;
 
-  document.getElementById('start_hour').addEventListener('change', syncHiddenFields);
-  document.getElementById('end_hour').addEventListener('change', syncHiddenFields);
+    const end =
+        document.getElementById(
+            'end_time_picker'
+        ).value;
 
-  // Validate end > start on submit
-  document.getElementById('activityForm').addEventListener('submit', function(e) {
-    syncHiddenFields();
-    const sh = parseInt(document.getElementById('start_hour').value);
-    const eh = parseInt(document.getElementById('end_hour').value);
-    if (eh <= sh) {
-      e.preventDefault();
-      alert('End hour must be after start hour.');
+    document.getElementById(
+        'start_time_hidden'
+    ).value = `${date} ${start}:00`;
+
+    document.getElementById(
+        'end_time_hidden'
+    ).value = `${date} ${end}:00`;
+}
+
+document.getElementById(
+    'start_time_picker'
+).addEventListener(
+    'change',
+    syncHiddenFields
+);
+
+document.getElementById(
+    'end_time_picker'
+).addEventListener(
+    'change',
+    syncHiddenFields
+);
+
+document.getElementById(
+    'activityForm'
+).addEventListener(
+    'submit',
+    function(e){
+
+        syncHiddenFields();
+
+        const start =
+            document.getElementById(
+                'start_time_picker'
+            ).value;
+
+        const end =
+            document.getElementById(
+                'end_time_picker'
+            ).value;
+
+        if(end <= start){
+
+            e.preventDefault();
+
+            alert(
+                'End time must be after start time.'
+            );
+        }
     }
-  });
+);
 
+document.querySelectorAll(
+    'input[name="transport_ui"]'
+).forEach(radio => {
 
-  document.querySelectorAll('input[name="transport_ui"]').forEach(radio => {
-  radio.addEventListener('change', () => {
-    document.getElementById('transport_mode').value = radio.value;
-  });
+    radio.addEventListener('change', () => {
+
+        document.getElementById(
+            'transport_mode'
+        ).value = radio.value;
+    });
 });
 
-  // Initialise on load
-  syncHiddenFields();
+syncHiddenFields();
 </script>
 
 </body>

@@ -314,7 +314,7 @@ foreach ($activitiesByDay as $date => $acts) {
           </a>
         </div>
 
-        <?php if (empty($activities)): ?>
+        <?php if (($visibleCountByDate[$date] ?? 0) === 0): ?>
           <div class="empty-state">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
               <path stroke-linecap="round" stroke-linejoin="round"
@@ -325,182 +325,286 @@ foreach ($activitiesByDay as $date => $acts) {
         <?php endif; ?>
 
         <?php
-        $responseModel = new RSVP();
+$responseModel = new RSVP();
 
-        foreach ($activities as $activity):
+$previousVisible = null;
 
+foreach ($activities as $activity):
 
-          if (
-      strtolower(trim($activity['title'])) === 'travel time'
-  ) {
+    // Leader is always going
+    if ($isLeader) {
+
+        $userResponse = 'going';
+
+    } else {
+
+        $userResponse = $responseModel->getUserResponse(
+            $activity['activity_id'],
+            $_SESSION['user_id']
+        );
+
+        // Hide activity completely
+        if ($userResponse === 'not_going') {
+            continue;
+        }
+    }
+
+    // Dynamic travel line between visible activities only
+    if (
+    $previousVisible &&
+    strtolower(trim($previousVisible['location'])) !==
+    strtolower(trim($activity['location']))
+):
+
+    $travelMinutes = 30;
+
+    if ($activity['transport_mode'] === 'walking') {
+        $travelMinutes = 20;
+    }
+
+    if ($activity['transport_mode'] === 'train') {
+        $travelMinutes = 45;
+    }
+
+    if ($activity['transport_mode'] === 'car') {
+        $travelMinutes = 30;
+    }
 ?>
-    
+
     <div class="travel-line">
-      Travel:
-      <?= htmlspecialchars($activity['location']) ?>
-      —
-      <?= date('h:i A', strtotime($activity['start_time'])) ?>
-      →
-      <?= date('h:i A', strtotime($activity['end_time'])) ?>
-    </div>
+
+    🚗 Travel:
+    <?= htmlspecialchars($previousVisible['location']) ?>
+    →
+    <?= htmlspecialchars($activity['location']) ?>
+
+    •
+
+    <?= $travelMinutes ?> mins
+    by
+    <?= htmlspecialchars($activity['transport_mode']) ?>
+
+</div>
 
 <?php
-    continue;
-  }
+    endif;
 
-          // Leader is always "going" — no RSVP needed
-          if ($isLeader) {
-            $userResponse = 'going';
-          } else {
-            $userResponse = $responseModel->getUserResponse(
-              $activity['activity_id'],
-              $_SESSION['user_id']
-            );
-            // Member chose not_going → hide activity entirely
-            if ($userResponse === 'not_going') continue;
-          }
+    // Card color class
+    $cardClass = '';
 
-          // Card color class based on RSVP state
-          $cardClass = '';
-          if ($activity['status'] === 'confirmed') {
-            $cardClass = ($userResponse === 'going') ? 'card-going' : 'card-pending';
-          }
-        ?>
+    if ($activity['status'] === 'confirmed') {
+        $cardClass =
+            ($userResponse === 'going')
+            ? 'card-going'
+            : 'card-pending';
+    }
+?>
 
-          <div class="activity-card <?= $cardClass ?>">
+<div class="activity-card <?= $cardClass ?>">
 
-            <img
-              class="activity-img"
-              src="https://images.unsplash.com/photo-1569949381669-ecf31ae8e613?q=80&w=600"
-              alt="<?= htmlspecialchars($activity['title']) ?>">
+    <img
+        class="activity-img"
+        src="https://images.unsplash.com/photo-1569949381669-ecf31ae8e613?q=80&w=600"
+        alt="<?= htmlspecialchars($activity['title']) ?>">
 
-            <div class="activity-body">
+    <div class="activity-body">
 
-              <!-- RSVP status indicator -->
-              <?php if ($activity['status'] === 'confirmed'): ?>
-                <?php if ($userResponse === 'going'): ?>
-                  <div class="rsvp-indicator rsvp-going">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                         stroke="currentColor" stroke-width="2.5" width="11" height="11">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+        <!-- RSVP status -->
+        <?php if ($activity['status'] === 'confirmed'): ?>
+
+            <?php if ($userResponse === 'going'): ?>
+
+                <div class="rsvp-indicator rsvp-going">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         fill="none"
+                         viewBox="0 0 24 24"
+                         stroke="currentColor"
+                         stroke-width="2.5"
+                         width="11"
+                         height="11">
+
+                        <path stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M5 13l4 4L19 7"/>
                     </svg>
-                    <?= $isLeader ? "You're going (Leader)" : "You're going" ?>
-                  </div>
-                <?php else: ?>
-                  <div class="rsvp-indicator rsvp-pending">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                         stroke="currentColor" stroke-width="2.5" width="11" height="11">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01"/>
+
+                    <?= $isLeader
+                        ? "You're going (Leader)"
+                        : "You're going" ?>
+                </div>
+
+            <?php else: ?>
+
+                <div class="rsvp-indicator rsvp-pending">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         fill="none"
+                         viewBox="0 0 24 24"
+                         stroke="currentColor"
+                         stroke-width="2.5"
+                         width="11"
+                         height="11">
+
+                        <path stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01"/>
                     </svg>
+
                     No response yet
-                  </div>
-                <?php endif; ?>
-              <?php endif; ?>
+                </div>
 
-              <h3 class="activity-title"><?= htmlspecialchars($activity['title']) ?></h3>
+            <?php endif; ?>
 
-              <div class="activity-meta">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/>
-                </svg>
-                <?= htmlspecialchars($activity['location']) ?>
-              </div>
+        <?php endif; ?>
 
-              <div class="activity-time">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                     stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <path d="M12 6v6l4 2"/>
-                </svg>
-                <?= date('h:i A', strtotime($activity['start_time'])) ?>
-                &nbsp;→&nbsp;
-                <?= date('h:i A', strtotime($activity['end_time'])) ?>
-              </div>
+        <h3 class="activity-title">
+            <?= htmlspecialchars($activity['title']) ?>
+        </h3>
 
-              <div class="activity-creator">
-                Added by <?= htmlspecialchars($activity['creator_name']) ?>
-              </div>
+        <div class="activity-meta">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 fill="currentColor"
+                 viewBox="0 0 24 24">
 
-              <div class="mt-2">
-                <?php if ($activity['status'] === 'draft'): ?>
-                  <span class="badge-status badge-draft">Draft</span>
-                <?php else: ?>
-                  <span class="badge-status badge-confirmed">Confirmed</span>
-                <?php endif; ?>
-              </div>
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/>
+            </svg>
 
-            </div>
+            <?= htmlspecialchars($activity['location']) ?>
+        </div>
 
-            <!-- ── Actions ── -->
-            <div class="activity-actions">
+        <div class="activity-time">
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 fill="none"
+                 viewBox="0 0 24 24"
+                 stroke="currentColor"
+                 stroke-width="2">
 
-              <?php if ($activity['status'] === 'draft' && $isLeader): ?>
-                <!-- Leader: confirm draft -->
-                <form method="POST" action="/Tripverse/app/controllers/ActivityController.php?action=confirm">
-                  <input type="hidden" name="activity_id" value="<?= $activity['activity_id'] ?>">
-                  <button type="submit" class="btn-action btn-confirm">Confirm</button>
-                </form>
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+            </svg>
 
-              <?php elseif ($activity['status'] === 'confirmed' && $isLeader): ?>
-                <!-- Leader: always going, no RSVP -->
-                <span class="leader-going-badge">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                       stroke="currentColor" stroke-width="2.5" width="13" height="13">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                  </svg>
-                  Always Going
+            <?= date('h:i A', strtotime($activity['start_time'])) ?>
+            &nbsp;→&nbsp;
+            <?= date('h:i A', strtotime($activity['end_time'])) ?>
+        </div>
+
+        <div class="activity-creator">
+            Added by <?= htmlspecialchars($activity['creator_name']) ?>
+        </div>
+
+        <div class="mt-2">
+
+            <?php if ($activity['status'] === 'draft'): ?>
+
+                <span class="badge-status badge-draft">
+                    Draft
                 </span>
 
-              <?php elseif ($activity['status'] === 'confirmed' && !$isLeader): ?>
-                <!-- Member RSVP -->
-                <form method="POST" action="/Tripverse/app/controllers/RSVPController.php?action=respond">
-                  <input type="hidden" name="activity_id" value="<?= $activity['activity_id'] ?>">
+            <?php else: ?>
 
-                  <?php if ($userResponse === 'going'): ?>
-                    <!-- Already chose Going: Going is locked, Not Going available -->
-                    <button type="button" class="btn-action btn-going btn-going-active">
-                      ✓ Going
+                <span class="badge-status badge-confirmed">
+                    Confirmed
+                </span>
+
+            <?php endif; ?>
+
+        </div>
+
+    </div>
+
+    <!-- Actions -->
+    <div class="activity-actions">
+
+        <?php if ($activity['status'] === 'draft' && $isLeader): ?>
+
+            <form method="POST"
+                  action="/Tripverse/app/controllers/ActivityController.php?action=confirm">
+
+                <input type="hidden"
+                       name="activity_id"
+                       value="<?= $activity['activity_id'] ?>">
+
+                <button type="submit"
+                        class="btn-action btn-confirm">
+                    Confirm
+                </button>
+            </form>
+
+        <?php elseif ($activity['status'] === 'confirmed' && $isLeader): ?>
+
+            <span class="leader-going-badge">
+                Always Going
+            </span>
+
+        <?php elseif ($activity['status'] === 'confirmed' && !$isLeader): ?>
+
+            <form method="POST"
+                  action="/Tripverse/app/controllers/RSVPController.php?action=respond">
+
+                <input type="hidden"
+                       name="activity_id"
+                       value="<?= $activity['activity_id'] ?>">
+
+                <?php if ($userResponse === 'going'): ?>
+
+                    <button type="button"
+                            class="btn-action btn-going btn-going-active">
+
+                        ✓ Going
                     </button>
+
                     <button
-                      name="status" value="not_going"
-                      type="submit"
-                      class="btn-action btn-notgoing"
-                      style="margin-top:8px"
-                      onclick="return confirm('You will no longer see this activity. Continue?')">
-                      Not Going
+                        name="status"
+                        value="not_going"
+                        type="submit"
+                        class="btn-action btn-notgoing"
+                        style="margin-top:8px">
+
+                        Not Going
                     </button>
 
-                  <?php else: ?>
-                    <!-- No response yet: show BOTH buttons -->
-                    <button name="status" value="going" type="submit" class="btn-action btn-going">
-                      ✓ Going
-                    </button>
+                <?php else: ?>
+
                     <button
-                      name="status" value="not_going"
-                      type="submit"
-                      class="btn-action btn-notgoing"
-                      style="margin-top:8px"
-                      onclick="return confirm('You will no longer see this activity. Continue?')">
-                      Not Going
+                        name="status"
+                        value="going"
+                        type="submit"
+                        class="btn-action btn-going">
+
+                        ✓ Going
                     </button>
 
-                  <?php endif; ?>
+                    <button
+                        name="status"
+                        value="not_going"
+                        type="submit"
+                        class="btn-action btn-notgoing"
+                        style="margin-top:8px">
 
-                </form>
+                        Not Going
+                    </button>
 
-              <?php endif; ?>
+                <?php endif; ?>
 
-            </div>
+            </form>
 
-          </div><!-- /activity-card -->
-        <?php endforeach; ?>
+        <?php endif; ?>
+
+    </div>
+
+</div>
+
+<?php
+    $previousVisible = $activity;
+endforeach;
+?>
 
       </div><!-- /day-panel -->
-    <?php endforeach; ?>
+
+<?php endforeach; ?>
+
   </div>
 
-</div><!-- /container -->
+</div><!-- /container --><
 
 <script>
 function selectDay(tab, panelId) {

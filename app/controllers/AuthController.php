@@ -2,6 +2,7 @@
 
 require_once '../../core/Database.php';
 require_once '../models/User.php';
+
 class AuthController
 {
     protected $userModel;
@@ -19,6 +20,7 @@ class AuthController
         if ($existingUser && count($existingUser) > 0) {
             return false;
         }
+
         $user = new User(
             $name,
             $password,
@@ -77,6 +79,7 @@ class AuthController
                 );
 
                 exit();
+
             } else {
 
                 $_SESSION['error'] =
@@ -149,11 +152,33 @@ class AuthController
 
             if ($result) {
 
+                // USER CAME FROM INVITATION LINK
+                if (
+                    isset($_SESSION['pending_invite_token'])
+                ) {
+
+                    $token =
+                        $_SESSION['pending_invite_token'];
+
+                    unset(
+                        $_SESSION['pending_invite_token']
+                    );
+
+                    header(
+                        "Location: /Tripverse/app/controllers/TripMemberController.php?action=accept&token=" .
+                        $token
+                    );
+
+                    exit();
+                }
+
+                // NORMAL LOGIN
                 header(
                     "Location: /Tripverse/index.php"
                 );
 
                 exit();
+
             } else {
 
                 $_SESSION['error'] =
@@ -169,6 +194,7 @@ class AuthController
             }
         }
     }
+
     public function logout()
     {
         session_start();
@@ -180,7 +206,6 @@ class AuthController
         exit();
     }
 }
-
 
 $auth = new AuthController();
 

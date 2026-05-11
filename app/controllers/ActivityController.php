@@ -12,21 +12,29 @@ class ActivityController
 
     public function __construct()
     {
-        $this->activityModel = new Activity();
+        $this->activityModel =
+            new Activity();
     }
 
     public function create()
     {
-        $title = trim($_POST['title']);
-        $location = trim($_POST['location']);
+        $title =
+            trim($_POST['title']);
 
-        $start_time = $_POST['start_time'];
-        $end_time = $_POST['end_time'];
+        $location =
+            trim($_POST['location']);
+
+        $start_time =
+            $_POST['start_time'];
+
+        $end_time =
+            $_POST['end_time'];
 
         $transport_mode =
-    $_POST['transport_mode'];
+            $_POST['transport_mode'];
 
-        $created_by = $_SESSION['user_id'];
+        $created_by =
+            $_SESSION['user_id'];
 
         // Validation
         if (
@@ -47,40 +55,21 @@ class ActivityController
             exit;
         }
 
-        // Create new itinerary version
-        $versionModel = new ItineraryVersion();
+        // CHECK CONFLICT BEFORE CREATING VERSION
+        $conflict =
+            $this->activityModel->hasConflict(
 
-        $new_version_id =
-            $versionModel->createNewVersion(
-                $_POST['itinerary_id'],
-                $_SESSION['user_id'],
-                'Added activity: ' . $title
+                $_POST['version_id'],
+
+                $start_time,
+
+                $end_time
             );
 
-        // Create activity in NEW version
-        $result = $this->activityModel->create([
-
-    'version_id' => $new_version_id,
-
-    'title' => $title,
-
-    'location' => $location,
-
-    'start_time' => $start_time,
-
-    'end_time' => $end_time,
-
-    'transport_mode' => $transport_mode,
-
-    'created_by' => $created_by
-
-]);
-
-        // INVALID TIME
-        if($result == 'invalid_time'){
+        if ($conflict) {
 
             $_SESSION['activity_error'] =
-                'End time must be after start time';
+                'Another activity already exists in this time';
 
             header(
                 'Location: ' .
@@ -90,11 +79,51 @@ class ActivityController
             exit;
         }
 
-        // TIME CONFLICT
-        if($result == 'time_conflict'){
+        // Create new itinerary version
+        $versionModel =
+            new ItineraryVersion();
+
+        $new_version_id =
+            $versionModel->createNewVersion(
+
+                $_POST['itinerary_id'],
+
+                $_SESSION['user_id'],
+
+                'Added activity: ' . $title
+            );
+
+        // Create activity in NEW version
+        $result =
+            $this->activityModel->create([
+
+                'version_id' =>
+                    $new_version_id,
+
+                'title' =>
+                    $title,
+
+                'location' =>
+                    $location,
+
+                'start_time' =>
+                    $start_time,
+
+                'end_time' =>
+                    $end_time,
+
+                'transport_mode' =>
+                    $transport_mode,
+
+                'created_by' =>
+                    $created_by
+            ]);
+
+        // INVALID TIME
+        if ($result == 'invalid_time') {
 
             $_SESSION['activity_error'] =
-                'Another activity already exists in this time';
+                'End time must be after start time';
 
             header(
                 'Location: ' .
@@ -115,80 +144,108 @@ class ActivityController
 
     public function confirm()
     {
-        if(!isset($_SESSION['user_id'])){
+        if (!isset($_SESSION['user_id'])) {
+
             die('Please login first');
         }
 
-        $activity_id = intval($_POST['activity_id']);
+        $activity_id =
+            intval($_POST['activity_id']);
 
         $activity =
             $this->activityModel
             ->getActivityWithTrip($activity_id);
 
-        if(!$activity){
+        if (!$activity) {
+
             die('Activity not found');
         }
 
         // Already confirmed
-        if($activity['status'] == 'confirmed'){
+        if ($activity['status'] == 'confirmed') {
 
             $_SESSION['activity_error'] =
                 'Activity already confirmed';
 
-            header('Location: ' . $_SERVER['HTTP_REFERER']);
+            header(
+                'Location: ' .
+                $_SERVER['HTTP_REFERER']
+            );
 
             exit;
         }
 
-        $tripMember = new TripMember();
+        $tripMember =
+            new TripMember();
 
         // Leader check
-        $isLeader = $tripMember->isLeader(
-            $activity['trip_id'],
-            $_SESSION['user_id']
-        );
+        $isLeader =
+            $tripMember->isLeader(
 
-        if(!$isLeader){
+                $activity['trip_id'],
+
+                $_SESSION['user_id']
+            );
+
+        if (!$isLeader) {
 
             $_SESSION['activity_error'] =
                 'Only leader can confirm activities';
 
-            header('Location: ' . $_SERVER['HTTP_REFERER']);
+            header(
+                'Location: ' .
+                $_SERVER['HTTP_REFERER']
+            );
 
             exit;
         }
 
         // Leader own activity auto-confirmed
-        if($activity['created_by'] == $_SESSION['user_id']){
+        if (
+            $activity['created_by'] ==
+            $_SESSION['user_id']
+        ) {
 
             $_SESSION['activity_error'] =
                 'Your activities are auto-confirmed';
 
-            header('Location: ' . $_SERVER['HTTP_REFERER']);
+            header(
+                'Location: ' .
+                $_SERVER['HTTP_REFERER']
+            );
 
             exit;
         }
 
         // Confirm activity
-        $this->activityModel->confirm($activity_id);
+        $this->activityModel->confirm(
+            $activity_id
+        );
 
         $_SESSION['activity_success'] =
             'Activity confirmed successfully';
 
-        header('Location: ' . $_SERVER['HTTP_REFERER']);
+        header(
+            'Location: ' .
+            $_SERVER['HTTP_REFERER']
+        );
 
         exit;
     }
 }
 
-$controller = new ActivityController();
+$controller =
+    new ActivityController();
 
-$action = $_GET['action'] ?? '';
+$action =
+    $_GET['action'] ?? '';
 
 if ($action == 'create') {
+
     $controller->create();
 }
 
 if ($action == 'confirm') {
+
     $controller->confirm();
 }

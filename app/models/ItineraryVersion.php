@@ -55,7 +55,8 @@ class ItineraryVersion
         $active =
             $this->getActiveVersion($itinerary_id);
 
-        if(!$active){
+        if (!$active) {
+
             return false;
         }
 
@@ -97,16 +98,30 @@ class ItineraryVersion
         ");
 
         // clone activities + clone RSVPs
-        if($activities){
+        if ($activities) {
 
-            foreach($activities as $activity){
+            foreach ($activities as $activity) {
 
-                $title = $activity['title'];
-                $location = $activity['location'];
-                $start = $activity['start_time'];
-                $end = $activity['end_time'];
-                $status = $activity['status'];
-                $creator = $activity['created_by'];
+                $title =
+                    $activity['title'];
+
+                $location =
+                    $activity['location'];
+
+                $start =
+                    $activity['start_time'];
+
+                $end =
+                    $activity['end_time'];
+
+                $status =
+                    $activity['status'];
+
+                $creator =
+                    $activity['created_by'];
+
+                $transport_mode =
+                    $activity['transport_mode'];
 
                 // create copied activity
                 $new_activity_id = $this->db->insert("
@@ -118,7 +133,8 @@ class ItineraryVersion
                         start_time,
                         end_time,
                         status,
-                        created_by
+                        created_by,
+                        transport_mode
                     )
                     VALUES
                     (
@@ -128,7 +144,8 @@ class ItineraryVersion
                         '$start',
                         '$end',
                         '$status',
-                        $creator
+                        $creator,
+                        '$transport_mode'
                     )
                 ");
 
@@ -140,9 +157,9 @@ class ItineraryVersion
                 ");
 
                 // clone RSVPs
-                if($rsvps){
+                if ($rsvps) {
 
-                    foreach($rsvps as $rsvp){
+                    foreach ($rsvps as $rsvp) {
 
                         $user_id =
                             intval($rsvp['user_id']);
@@ -184,8 +201,11 @@ class ItineraryVersion
         $version_id
     ) {
 
-        $itinerary_id = intval($itinerary_id);
-        $version_id = intval($version_id);
+        $itinerary_id =
+            intval($itinerary_id);
+
+        $version_id =
+            intval($version_id);
 
         // deactivate all versions
         $this->db->update("
