@@ -207,4 +207,25 @@ public function getItinerary($itinerary_id)
 
     return $result[0] ?? null;
 }
+
+public function getItineraryByTrip($trip_id)
+    {
+        $trip_id =
+            intval($trip_id);
+
+        $result = $this->db->select("
+
+            SELECT *
+
+            FROM itineraries
+
+            WHERE trip_id =
+            $trip_id
+
+            LIMIT 1
+
+        ");
+
+        return $result[0] ?? null;
+    }
 }

@@ -93,6 +93,80 @@ class DocumentController
 
         echo "Upload failed";
     }
+    public function delete()
+{
+    $document_id =
+        intval($_GET['document_id']);
+
+    $itinerary_id =
+        intval($_GET['itinerary_id']);
+
+    $document =
+        $this->documentModel
+        ->getById($document_id);
+
+    if (!$document) {
+
+        die('Document not found');
+    }
+
+    /*
+    |------------------------------------------------------------------
+    | OWNER ONLY
+    |------------------------------------------------------------------
+    */
+
+    if (
+        $document['owner_member_id']
+        != $_SESSION['user_id']
+    ) {
+
+        die('Unauthorized');
+    }
+
+    /*
+    |------------------------------------------------------------------
+    | DELETE FILE
+    |------------------------------------------------------------------
+    */
+
+    $file =
+        __DIR__ .
+        '/../uploads/documents/' .
+        $document['file_path'];
+
+    if (file_exists($file)) {
+
+        unlink($file);
+    }
+
+    /*
+    |------------------------------------------------------------------
+    | DELETE DB ROW
+    |------------------------------------------------------------------
+    */
+
+    $this->documentModel
+        ->delete($document_id);
+
+    /*
+    |------------------------------------------------------------------
+    | BACK
+    |------------------------------------------------------------------
+    */
+
+    $_SESSION['active_tab'] =
+        'documents';
+
+    header(
+
+        'Location: /Tripverse/app/controllers/ItineraryController.php?action=show&itinerary_id=' .
+        $itinerary_id
+
+    );
+
+    exit;
+}
 }
 
 /*
@@ -115,4 +189,9 @@ if ($action === 'index') {
 if ($action === 'upload') {
 
     $controller->upload();
+}
+
+elseif ($action == 'delete') {
+
+    $controller->delete();
 }

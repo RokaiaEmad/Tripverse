@@ -6,6 +6,7 @@ require_once __DIR__ . '/../models/ItineraryVersion.php';
 require_once __DIR__ . '/../models/Activity.php';
 require_once __DIR__ . '/../models/Trip.php';
 require_once __DIR__ . '/../models/TripMember.php';
+require_once __DIR__ . '/../models/Document.php';
 
 class ItineraryController
 {
@@ -13,21 +14,34 @@ class ItineraryController
     private $activityModel;
     private $tripModel;
     private $memberModel;
+    private $documentModel;
 
     public function __construct()
     {
-        $this->versionModel = new ItineraryVersion();
+        $this->versionModel =
+            new ItineraryVersion();
 
-        $this->activityModel = new Activity();
+        $this->activityModel =
+            new Activity();
 
-        $this->tripModel = new Trip();
+        $this->tripModel =
+            new Trip();
 
-        $this->memberModel = new TripMember();
+        $this->memberModel =
+            new TripMember();
+
+        $this->documentModel =
+    new Document();
     }
 
     public function show()
     {
-        // itinerary id check
+        /*
+        |--------------------------------------------------------------------------
+        | ITINERARY ID CHECK
+        |--------------------------------------------------------------------------
+        */
+
         if (!isset($_GET['itinerary_id'])) {
 
             die('Itinerary ID missing');
@@ -36,7 +50,12 @@ class ItineraryController
         $itinerary_id =
             intval($_GET['itinerary_id']);
 
-        // active version
+        /*
+        |--------------------------------------------------------------------------
+        | ACTIVE VERSION
+        |--------------------------------------------------------------------------
+        */
+
         $version =
             $this->versionModel
             ->getActiveVersion($itinerary_id);
@@ -46,19 +65,34 @@ class ItineraryController
             die('No active version found');
         }
 
-        // all versions history
+        /*
+        |--------------------------------------------------------------------------
+        | VERSION HISTORY
+        |--------------------------------------------------------------------------
+        */
+
         $versions =
             $this->versionModel
             ->getAllVersions($itinerary_id);
 
-        // activities
+        /*
+        |--------------------------------------------------------------------------
+        | ACTIVITIES
+        |--------------------------------------------------------------------------
+        */
+
         $activitiesByDay =
             $this->activityModel
             ->getGroupedByDay(
                 $version['version_id']
             );
 
-        // itinerary
+        /*
+        |--------------------------------------------------------------------------
+        | ITINERARY
+        |--------------------------------------------------------------------------
+        */
+
         $itinerary =
             $this->tripModel
             ->getItinerary($itinerary_id);
@@ -68,7 +102,12 @@ class ItineraryController
             die('Itinerary not found');
         }
 
-        // trip
+        /*
+        |--------------------------------------------------------------------------
+        | TRIP
+        |--------------------------------------------------------------------------
+        */
+
         $trip =
             $this->tripModel
             ->getById($itinerary['trip_id']);
@@ -78,12 +117,36 @@ class ItineraryController
             die('Trip not found');
         }
 
-        // members
+        /*
+        |--------------------------------------------------------------------------
+        | MEMBERS
+        |--------------------------------------------------------------------------
+        */
+
         $members =
             $this->memberModel
             ->getMembers($trip['id']);
 
-        // leader check
+        /*
+        |--------------------------------------------------------------------------
+        | DOCUMENTS
+        |--------------------------------------------------------------------------
+        */
+
+        $documentModel =
+            new Document();
+
+        $documents =
+            $documentModel->getTripDocuments(
+                $trip['id']
+            );
+
+        /*
+        |--------------------------------------------------------------------------
+        | LEADER CHECK
+        |--------------------------------------------------------------------------
+        */
+
         $isLeader =
             $this->memberModel
             ->isLeader(
@@ -91,7 +154,12 @@ class ItineraryController
                 $_SESSION['user_id']
             );
 
-        // generate trip days
+        /*
+        |--------------------------------------------------------------------------
+        | GENERATE TRIP DAYS
+        |--------------------------------------------------------------------------
+        */
+
         $tripDays = [];
 
         $current =
@@ -124,45 +192,91 @@ class ItineraryController
             $dayNumber++;
         }
 
-        // send data to view
-       // send data to view
-// send data to view
-$data = [
+        /*
+        |--------------------------------------------------------------------------
+        | SEND DATA TO VIEW
+        |--------------------------------------------------------------------------
+        */
 
-    'trip' => $trip,
+        $documents =
+    $this->documentModel
+    ->getVisibleDocuments(
+        $trip['id'],
+        $_SESSION['user_id'],
+        $isLeader
+    );
 
-    'members' => $members,
+    $expenseModel = new Expense();
+        $analytics =
+           $expenseModel->getCategoryAnalytics($trip['id']);
 
-    'activitiesByDay' => $activitiesByDay,
+    /*
+|------------------------------------------------------------------
+| PACKING ITEMS
+|------------------------------------------------------------------
+*/
 
-    'version' => $version,
+$items =
+    $_SESSION['packing_items']
+    ?? [];
 
-    'versions' => $versions,
+unset($_SESSION['packing_items']);
 
-    'itinerary_id' => $itinerary_id,
+        $data = [
 
-    'isLeader' => $isLeader,
+            'trip' => $trip,
 
-    'tripDays' => $tripDays
-];
+            'members' => $members,
 
-$activeTab =
-    $_SESSION['active_tab']
-    ?? 'itinerary';
+            'documents' => $documents,
 
-unset($_SESSION['active_tab']);
+            'activitiesByDay' => $activitiesByDay,
 
-extract($data);
+            'version' => $version,
 
-require_once
-    __DIR__ .
-    '/../views/itinerary/index.php';
+            'versions' => $versions,
+
+            'itinerary_id' => $itinerary_id,
+
+            'isLeader' => $isLeader,
+
+            'tripDays' => $tripDays,
+            'documents' => $documents,
+            'items' => $items,
+            'analytics' => $analytics
+        ];
+
+        /*
+        |--------------------------------------------------------------------------
+        | ACTIVE TAB
+        |--------------------------------------------------------------------------
+        */
+
+        $activeTab =
+            $_SESSION['active_tab']
+            ?? 'itinerary';
+
+        unset($_SESSION['active_tab']);
+
+        extract($data);
+
+        require_once
+            __DIR__ .
+            '/../views/itinerary/index.php';
     }
 }
 
-$controller = new ItineraryController();
+/*
+|--------------------------------------------------------------------------
+| ROUTER
+|--------------------------------------------------------------------------
+*/
 
-$action = $_GET['action'] ?? '';
+$controller =
+    new ItineraryController();
+
+$action =
+    $_GET['action'] ?? '';
 
 if ($action == 'show') {
 

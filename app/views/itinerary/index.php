@@ -273,23 +273,29 @@ unset($_SESSION['activity_success']);
 
     <?php if ($activeTab === 'itinerary'): ?>
 
-      <?php include __DIR__ . '/partials/dayPanels.php'; ?>
+        <?php include __DIR__ . '/partials/dayPanels.php'; ?>
 
     <?php elseif ($activeTab === 'documents'): ?>
 
-      <?php include __DIR__ . '/../documents/content.php'; ?>
+        <?php include __DIR__ . '/../documents/content.php'; ?>
 
     <?php elseif ($activeTab === 'polls'): ?>
 
-      <?php include __DIR__ . '/../poll/content.php'; ?>
+        <?php include __DIR__ . '/../poll/content.php'; ?>
 
     <?php elseif ($activeTab === 'expenses'): ?>
 
-      <?php include __DIR__ . '/../expense/addExpense.php'; ?>
+        <?php include __DIR__ . '/../expense/addExpense.php'; ?>
+
+    <?php elseif ($activeTab === 'packing'): ?>
+
+        <?php include __DIR__ . '/../packing/index.php'; ?>
 
     <?php endif; ?>
 
-  </div>
+    
+
+</div>
 
 </div>
 

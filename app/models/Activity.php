@@ -222,4 +222,36 @@ class Activity
 
         return $result[0] ?? null;
     }
+
+     public function getByTrip($trip_id)
+    {
+        $trip_id =
+            intval($trip_id);
+
+        return $this->db->select("
+
+            SELECT
+                activities.*
+
+            FROM activities
+
+            JOIN itinerary_versions
+            ON itinerary_versions.version_id =
+            activities.version_id
+
+            JOIN itineraries
+            ON itineraries.itinerary_id =
+            itinerary_versions.itinerary_id
+
+            WHERE itineraries.trip_id =
+            $trip_id
+
+            ORDER BY
+            activities.start_time ASC
+
+        ");
+    }
+
+
+    
 }

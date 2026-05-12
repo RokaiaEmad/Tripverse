@@ -249,4 +249,6 @@ class ItineraryVersion
 
         return $result[0]['trip_id'] ?? null;
     }
+
+    
 }

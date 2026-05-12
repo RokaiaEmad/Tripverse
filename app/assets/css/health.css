@@ -1,0 +1,102 @@
+/* ================================
+   HEALTH PROFILE PAGE
+================================ */
+
+.documents-wrapper {
+  padding: 20px;
+}
+
+/* HEADER */
+.documents-header {
+  margin-bottom: 20px;
+}
+
+.documents-header h1 {
+  font-size: 36px;
+  color: #00f5c8;
+  margin-bottom: 5px;
+}
+
+.documents-header p {
+  color: #9aa4b2;
+  font-size: 14px;
+}
+
+/* FORM */
+form {
+  background: #0f1a33;
+  padding: 20px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 25px;
+}
+
+label {
+  display: block;
+  margin-top: 12px;
+  margin-bottom: 6px;
+  color: #cbd5e1;
+  font-size: 13px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #0b1224;
+  color: white;
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: #00f5c8;
+}
+
+/* BUTTON */
+.upload-btn {
+  margin-top: 15px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(90deg, #00f5c8, #00a3ff);
+  color: #06101f;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.upload-btn:hover {
+  opacity: 0.9;
+}
+
+/* PROFILE CARDS */
+.document-card {
+  background: #0f1a33;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+  color: white;
+}
+
+.document-card h3 {
+  font-size: 18px;
+  margin-bottom: 8px;
+  color: #ffffff;
+}
+
+.document-card p {
+  font-size: 13px;
+  color: #9aa4b2;
+  margin: 4px 0;
+}
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #9aa4b2;
+  background: #0f1a33;
+  border-radius: 16px;
+}

@@ -136,6 +136,18 @@ if (!isset($trip)) {
             <span>Documents</span>
         </a>
 
+       <a
+href="/Tripverse/app/controllers/PackingController.php?action=index&trip_id=<?= $trip['id'] ?>"
+class="<?= $activeTab == 'packing' ? 'active' : '' ?>">
+
+    <i class="fa-solid fa-suitcase"></i>
+
+    <span>Packing</span>
+
+</a>
+
+
+
         <a href="/Tripverse/app/controllers/PollingController.php?action=index&itinerary_id=<?= $trip['id'] ?>"
             class="tab-link">
 

@@ -1,0 +1,91 @@
+.packing-full {
+  width: 100%;
+}
+
+.full-width-list {
+  width: 100%;
+}
+
+.full-width-list .document-card {
+  width: 100%;
+}
+
+.documents-header h2 {
+  color: white;
+  font-size: 48px;
+}
+
+.documents-header p {
+  color: #8f9bb7;
+  margin-top: 10px;
+}
+
+.packing-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 30px;
+  margin-bottom: 25px;
+}
+
+.packing-info {
+  flex: 1;
+}
+
+.packing-actions {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.delete-btn {
+  width: 100%;
+  height: 60px;
+  border: none;
+  border-radius: 18px;
+  background: #ff4d73;
+  color: white;
+  font-size: 28px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  opacity: 0.9;
+}
+
+.assign-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.assign-select {
+  height: 60px;
+}
+
+.suggested-badge {
+  display: inline-block;
+  margin: 14px 0;
+  padding: 10px 20px;
+  border-radius: 999px;
+  background: #12e7c8;
+  color: #04111f;
+  font-weight: 700;
+}
+
+.packing-status {
+  color: #bfc7d9;
+  font-size: 28px;
+  margin-top: 8px;
+}
+
+.empty-state {
+  padding: 80px;
+  text-align: center;
+  background: #131f42;
+  border-radius: 30px;
+  color: white;
+  font-size: 32px;
+}
